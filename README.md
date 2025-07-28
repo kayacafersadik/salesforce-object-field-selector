@@ -1,6 +1,5 @@
 # Salesforce Object Field Selector
 
-> ⚠️ **Beta Release** – This component is currently in beta. Interfaces and behavior may change in future versions.
 
 A dynamic and customizable Lightning Web Component (LWC) for selecting Salesforce objects and fields, including support for multi-level reference fields. Perfect for use in merge field generators, formula builders, and dynamic UI integrations.
 
