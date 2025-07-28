@@ -1,4 +1,4 @@
-# Salesforce Object Field Selector `v0.1.0-beta`
+# Salesforce Object Field Selector
 
 > ⚠️ **Beta Release** – This component is currently in beta. Interfaces and behavior may change in future versions.
 
