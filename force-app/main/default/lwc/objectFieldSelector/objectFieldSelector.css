@@ -1,76 +1,76 @@
 :host {
-    --ios-bg: #f2f2f7;
-    --ios-surface: #ffffff;
-    --ios-primary: #007aff;
-    --ios-text-primary: #000000;
-    --ios-text-secondary: #8e8e93;
-    --ios-border: #e0e0e0;
-    --ios-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  }
-  
-  .ios-container {
-    background: var(--ios-bg);
-    padding: 16px;
-  }
-  
-  .ios-card {
-    background: var(--ios-surface);
-    border-radius: 14px;
-    box-shadow: var(--ios-shadow);
-    margin-bottom: 16px;
-  }
-  
-  .ios-label {
-    color: var(--ios-text-secondary);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    display: block;
-    margin-bottom: 4px;
-  }
-  
-  /* Açıklama stili */
-    .header-desc {
-        font-size: 0.875rem;
-        color: var(--ios-text-secondary);
-        margin: 8px 0 0;
-    }
-  .picker {
-    width: 100%;
-    min-height: 240px;
-    border: 1px solid var(--ios-border);
-    border-radius: 10px;
-    padding: 4px;
-    background: var(--ios-surface);
-    font-size: 0.8rem;
-    outline: none;
-  }
-  
-  .picker:focus {
-    border-color: var(--ios-primary);
-    box-shadow: 0 0 0 2px rgba(0,122,255,.15);
-  }
-  
-  .plain-editor {
-    width: 100%;
-    min-height: 150px;
-    border: 1px solid var(--ios-border);
-    border-radius: 10px;
-    padding: 8px;
-    font-family: monospace;
-    font-size: 0.85rem;
-    outline: none;
-  }
-  
-  .plain-editor:focus {
-    border-color: var(--ios-primary);
-    box-shadow: 0 0 0 2px rgba(0,122,255,.15);
-  }
-  
-  .compact-editor {
-    width: 100%;
-    min-height: 32px;
-    font-size: 0.78rem;
-    padding: 4px 8px;
-  }
-  
+  --ios-bg: #f2f2f7;
+  --ios-surface: #ffffff;
+  --ios-primary: #007aff;
+  --ios-text-primary: #000000;
+  --ios-text-secondary: #8e8e93;
+  --ios-border: #e0e0e0;
+  --ios-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.ios-container {
+  background: var(--ios-bg);
+  padding: 16px;
+}
+
+.ios-card {
+  background: var(--ios-surface);
+  border-radius: 14px;
+  box-shadow: var(--ios-shadow);
+  margin-bottom: 16px;
+}
+
+.ios-label {
+  color: var(--ios-text-secondary);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Description style */
+.header-desc {
+  font-size: 0.875rem;
+  color: var(--ios-text-secondary);
+  margin: 8px 0 0;
+}
+
+.picker {
+  width: 100%;
+  min-height: 240px;
+  border: 1px solid var(--ios-border);
+  border-radius: 10px;
+  padding: 4px;
+  background: var(--ios-surface);
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.picker:focus {
+  border-color: var(--ios-primary);
+  box-shadow: 0 0 0 2px rgba(0,122,255,.15);
+}
+
+.plain-editor {
+  width: 100%;
+  min-height: 150px;
+  border: 1px solid var(--ios-border);
+  border-radius: 10px;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.plain-editor:focus {
+  border-color: var(--ios-primary);
+  box-shadow: 0 0 0 2px rgba(0,122,255,.15);
+}
+
+.compact-editor {
+  width: 100%;
+  min-height: 32px;
+  font-size: 0.78rem;
+  padding: 4px 8px;
+}
