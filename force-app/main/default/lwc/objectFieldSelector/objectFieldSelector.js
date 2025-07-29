@@ -1,19 +1,45 @@
-// objectFieldSelector.js
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import getObjectsAndFields from '@salesforce/apex/ObjectInfoController.getObjectsAndFields';
+import getAllObjectsWithIcons from '@salesforce/apex/ObjectInfoController.getAllObjectsWithIcons';
 import getReferenceTargets from '@salesforce/apex/ObjectInfoController.getReferenceTargets';
 
 export default class ObjectFieldSelector extends LightningElement {
-  @track rootObjectApiName = 'Opportunity';
+  // AUTOCOMPLETE OBJECTS
+  @track allObjects = [];
+  @track filteredObjects = [];
+  @track searchKey = '';
+  @track showDropdown = false;
+
+  @api rootObjectApiName = 'Opportunity';
   @track levelFields0 = [];
   @track dynamicLevels = [];
   @track insertedFields = [];
   selectedPath = [];
 
+  defaultObjects = ['Opportunity', 'Account', 'Contact'];
+
   connectedCallback() {
+    this.loadAllObjects();
     this.loadRoot();
   }
 
+  // Automatically loads object list
+  async loadAllObjects() {
+    try {
+      const data = await getAllObjectsWithIcons();
+      console.log(data);
+      this.allObjects = (data || []).map(obj => ({
+        label: obj.label,
+        apiName: obj.apiName,
+        iconUrl: obj.iconUrl
+      }));
+      this.filterObjects(); // Initial load (defaults if empty)
+    } catch {
+      this.allObjects = [];
+    }
+  }
+
+  // Loads the main/root object fields
   async loadRoot() {
     if (!this.rootObjectApiName) return;
     const map = await getObjectsAndFields({ objectApiNames: [this.rootObjectApiName] });
@@ -22,7 +48,46 @@ export default class ObjectFieldSelector extends LightningElement {
     this.selectedPath = [];
   }
 
-  // Etiketlerde önek kullanmadan, ardından alfabetik sıralı döner
+  // When autocomplete search key changes
+  handleSearchChange(e) {
+    this.searchKey = e.target.value;
+    this.filterObjects();
+    this.showDropdown = true;
+  }
+
+  // Opens dropdown when input is focused
+  handleInputFocus() {
+    this.showDropdown = true;
+    this.filterObjects();
+  }
+
+  // Filters object list
+  filterObjects() {
+    const key = (this.searchKey || '').trim().toLowerCase();
+    if (!key) {
+      // If input is empty, show only default objects
+      this.filteredObjects = this.allObjects.filter(obj => this.defaultObjects.includes(obj.apiName));
+    } else {
+      this.filteredObjects = this.allObjects.filter(
+        obj =>
+          obj.label.toLowerCase().includes(key) ||
+          obj.apiName.toLowerCase().includes(key)
+      );
+    }
+  }
+
+  // When an object is selected from the dropdown
+  handleObjectSelect(event) {
+    const apiName = event.currentTarget.dataset.apiname;
+    const selected = this.allObjects.find(obj => obj.apiName === apiName);
+    if (!selected) return;
+    this.rootObjectApiName = selected.apiName;
+    this.searchKey = selected.label;
+    this.showDropdown = false;
+    this.loadRoot();
+  }
+
+  // Field list, original logic continues
   wrapFields(fieldDataList) {
     const items = [];
     for (const f of fieldDataList) {
@@ -30,14 +95,12 @@ export default class ObjectFieldSelector extends LightningElement {
       const rel = f.label;
 
       if (f.type === 'REFERENCE') {
-        // İlişki seçeneği: sadece ilişki adı + '>'
         items.push({
           label: `${rel} >`,
           value: rel,
           apiName: api,
           isRelationship: true
         });
-        // Raw-ID seçeneği: sadece API adı
         items.push({
           label: api,
           value: api,
@@ -45,7 +108,6 @@ export default class ObjectFieldSelector extends LightningElement {
           isRelationship: false
         });
       } else {
-        // Normal alan: sadece API adı
         items.push({
           label: api,
           value: api,
@@ -54,8 +116,6 @@ export default class ObjectFieldSelector extends LightningElement {
         });
       }
     }
-
-    // Burada alfabetik olarak sıralıyoruz
     items.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
     return items;
   }
@@ -75,17 +135,14 @@ export default class ObjectFieldSelector extends LightningElement {
     const sel = source.find(item => item.value === raw);
     if (!sel) return;
 
-    // selectedPath güncelle
     this.selectedPath = this.selectedPath.slice(0, level);
     this.selectedPath[level] = sel.isRelationship ? sel.value : sel.apiName;
 
-    // Eğer ilişki değilse alt seviyeleri temizle
     if (!sel.isRelationship) {
       this.dynamicLevels = this.dynamicLevels.slice(0, level);
       return;
     }
 
-    // İlişkiyse child objenin alanlarını yükle
     const parentObj = level === 0
       ? this.rootObjectApiName
       : this.dynamicLevels[level - 1].targetObject;
@@ -122,14 +179,10 @@ export default class ObjectFieldSelector extends LightningElement {
 
   insert() {
     if (this.isInsertDisabled) return;
-
     const token = this.selectedPath.join('.');
     const id = Date.now().toString() + Math.random().toString(36).slice(2);
     this.insertedFields = [...this.insertedFields, { id, value: token }];
-
     this.clearSelection();
-
-    // Son eklenen öğeye smooth scroll
     requestAnimationFrame(() => {
       setTimeout(() => {
         const last = this.template.querySelector(`input[data-id="${id}"]`);
@@ -155,7 +208,6 @@ export default class ObjectFieldSelector extends LightningElement {
   clearSelection() {
     this.selectedPath = [];
     this.dynamicLevels = [];
-
     const all = this.template.querySelectorAll('select.picker');
     all.forEach(sel => {
       sel.value = null;
@@ -180,5 +232,19 @@ export default class ObjectFieldSelector extends LightningElement {
   selectOutput(e) {
     const inp = this.template.querySelector(`input[data-id="${e.currentTarget.dataset.id}"]`);
     if (inp) inp.select();
+  }
+
+  // Close dropdown when clicking outside
+  renderedCallback() {
+    if (!this._listenerSet) {
+      document.addEventListener('click', this.handleDocumentClick.bind(this));
+      this._listenerSet = true;
+    }
+  }
+  handleDocumentClick(e) {
+    const searchDiv = this.template.querySelector('.object-lookup-container');
+    if (searchDiv && !searchDiv.contains(e.target)) {
+      this.showDropdown = false;
+    }
   }
 }
