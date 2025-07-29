@@ -53,7 +53,6 @@ sfdx force:source:deploy -p force-app
 
 ```html
 <c-object-field-selector
-    onfieldselect={handleFieldInsert}
     root-object-api-name="Opportunity">
 </c-object-field-selector>
 ```
@@ -61,7 +60,6 @@ sfdx force:source:deploy -p force-app
 | Property               | Type     | Description                                                     |
 | ---------------------- | -------- | --------------------------------------------------------------- |
 | `root-object-api-name` | `String` | API name of the root object (e.g., `Opportunity`, `Contact`)    |
-| `onfieldselect`        | `Event`  | Custom event fired when a field is selected (returns full path) |
 
 ---
 
