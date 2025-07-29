@@ -1,113 +1,149 @@
-<!-- objectFieldSelector.html -->
 <template>
-    <section class="ios-container picker-panel">
-  
-      <!-- HEADER -->
-      <!-- ROOT OBJECT -->
-      <div class="ios-card slds-p-around_medium slds-m-bottom_small">
-        <h2 class="slds-text-heading_small">Insert Field</h2>
-        <p class="header-desc">
-          Select a field, then click Insert. Labels followed by a “&gt;” indicate that there are more fields available.
-        </p>
+  <section class="ios-container picker-panel">
+
+    <!-- HEADER -->
+    <div class="ios-card slds-p-around_medium slds-m-bottom_small">
+      <h2 class="slds-text-heading_small">Insert Field</h2>
+      <p class="header-desc">
+        Select a field, then click Insert. Labels followed by a “&gt;” indicate that there are more fields available.
+      </p>
+      
+      <!-- AUTOCOMPLETE OBJECT PICKER -->
+      <div class="object-lookup-container" style="position:relative;">
+        <label class="ios-label" for="objectInput">Root Object</label>
         <lightning-input
-          type="text"
-          label="Root Object API Name"
-          value={rootObjectApiName}
-          onchange={handleRootChange}>
-        </lightning-input>
+          id="objectInput"
+          type="search"
+          placeholder="Search objects..."
+          value={searchKey}
+          onchange={handleSearchChange}
+          onfocus={handleInputFocus}
+          onclick={handleInputFocus}
+          class="object-search-input"
+          autocomplete="off"
+        ></lightning-input>
+        <template if:true={showDropdown}>
+          <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid object-dropdown"
+               style="position:absolute;width:100%;z-index:10;">
+            <ul class="slds-listbox slds-listbox_vertical" role="listbox">
+              <template if:true={filteredObjects.length}>
+                <template for:each={filteredObjects} for:item="obj">
+                  <li key={obj.apiName}
+                      role="presentation"
+                      class="slds-listbox__item"
+                      onclick={handleObjectSelect}
+                      data-apiname={obj.apiName}>
+                    <div class="slds-media slds-listbox__option slds-listbox__option_entity" role="option">
+                      <!-- <span class="slds-media__figure">
+                        <img src={obj.iconUrl} alt="" style="width:22px;height:22px;border-radius:4px;" />
+                      </span> -->
+                      <span class="slds-media__body">
+                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">{obj.label}</span>
+                        <span class="slds-listbox__option-meta">{obj.apiName}</span>
+                      </span>
+                    </div>
+                  </li>
+                </template>
+              </template>
+              <template if:false={filteredObjects.length}>
+                <li class="slds-listbox__item">
+                  <span class="slds-listbox__option-text">No results</span>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </template>
       </div>
-  
-      <!-- PICKER -->
-      <div class="ios-card slds-p-around_small slds-m-bottom_small">
-        <div class="slds-grid slds-gutters">
-          <!-- LEVEL 1 -->
-          <div class="slds-col">
-            <label class="ios-label">Fields (Level 1)</label>
+    </div>
+
+    <!-- PICKER -->
+    <div class="ios-card slds-p-around_small slds-m-bottom_small">
+      <div class="slds-grid slds-gutters">
+        <!-- LEVEL 1 -->
+        <div class="slds-col">
+          <label class="ios-label">Fields (Level 1)</label>
+          <select size="12"
+                  class="picker"
+                  data-level="0"
+                  onchange={handleFieldChange}>
+            <template for:each={levelFields0} for:item="f">
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            </template>
+          </select>
+        </div>
+        <!-- DYNAMIC LEVELS -->
+        <template for:each={dynamicLevels} for:item="lvl">
+          <div class="slds-col" key={lvl.key}>
+            <label class="ios-label">
+              Fields (Level {lvl.displayLevel})
+            </label>
             <select size="12"
                     class="picker"
-                    data-level="0"
+                    data-level={lvl.depth}
                     onchange={handleFieldChange}>
-              <template for:each={levelFields0} for:item="f">
-                <option key={f.value} value={f.value}>
-                  {f.label}
+              <template for:each={lvl.fields} for:item="f2">
+                <option key={f2.value} value={f2.value}>
+                  {f2.label}
                 </option>
               </template>
             </select>
           </div>
-  
-          <!-- DYNAMIC LEVELS -->
-          <template for:each={dynamicLevels} for:item="lvl">
-            <div class="slds-col" key={lvl.key}>
-              <label class="ios-label">
-                Fields (Level {lvl.displayLevel})
-              </label>
-              <select size="12"
-                      class="picker"
-                      data-level={lvl.depth}
-                      onchange={handleFieldChange}>
-                <template for:each={lvl.fields} for:item="f2">
-                  <option key={f2.value} value={f2.value}>
-                    {f2.label}
-                  </option>
-                </template>
-              </select>
-            </div>
-          </template>
-        </div>
-  
-        <div class="slds-m-top_small slds-text-align_right">
-          <lightning-button
-            variant="neutral"
-            label="Clear"
-            onclick={clearSelection}>
-          </lightning-button>
-          <lightning-button
-            variant="brand"
-            class="slds-m-left_x-small"
-            label="Insert"
-            onclick={insert}
-            disabled={isInsertDisabled}>
-          </lightning-button>
-        </div>
-      </div>
-  
-      <!-- SELECTED FIELDS -->
-      <div class="ios-card slds-p-around_medium" id="selected-fields-container" style="overflow-y:auto; max-height:200px;">
-        <label class="ios-label slds-m-bottom_x-small">
-          Selected Fields
-        </label>
-        <template for:each={insertedFields} for:item="item">
-          <div key={item.id}
-               class="slds-grid slds-wrap slds-gutters slds-m-bottom_x-small">
-            <div class="slds-col slds-size_2-of-3">
-              <input type="text"
-                     class="plain-editor compact-editor"
-                     readonly
-                     value={item.value}
-                     data-id={item.id}
-                     onclick={selectOutput}/>
-            </div>
-            <div class="slds-col slds-size_1-of-3 slds-grid slds-align_absolute-center">
-              <lightning-button-icon
-                icon-name="utility:copy"
-                alternative-text="Copy"
-                title="Copy"
-                data-id={item.id}
-                onclick={copyField}
-                class="slds-m-right_x-small">
-              </lightning-button-icon>
-              <lightning-button-icon
-                icon-name="utility:close"
-                alternative-text="Remove"
-                title="Remove"
-                data-id={item.id}
-                onclick={removeField}>
-              </lightning-button-icon>
-            </div>
-          </div>
         </template>
       </div>
-  
-    </section>
-  </template>
-  
+
+      <div class="slds-m-top_small slds-text-align_right">
+        <lightning-button
+          variant="neutral"
+          label="Clear"
+          onclick={clearSelection}>
+        </lightning-button>
+        <lightning-button
+          variant="brand"
+          class="slds-m-left_x-small"
+          label="Insert"
+          onclick={insert}
+          disabled={isInsertDisabled}>
+        </lightning-button>
+      </div>
+    </div>
+
+    <!-- SELECTED FIELDS -->
+    <div class="ios-card slds-p-around_medium" id="selected-fields-container" style="overflow-y:auto; max-height:200px;">
+      <label class="ios-label slds-m-bottom_x-small">
+        Selected Fields
+      </label>
+      <template for:each={insertedFields} for:item="item">
+        <div key={item.id}
+             class="slds-grid slds-wrap slds-gutters slds-m-bottom_x-small">
+          <div class="slds-col slds-size_2-of-3">
+            <input type="text"
+                   class="plain-editor compact-editor"
+                   readonly
+                   value={item.value}
+                   data-id={item.id}
+                   onclick={selectOutput}/>
+          </div>
+          <div class="slds-col slds-size_1-of-3 slds-grid slds-align_absolute-center">
+            <lightning-button-icon
+              icon-name="utility:copy"
+              alternative-text="Copy"
+              title="Copy"
+              data-id={item.id}
+              onclick={copyField}
+              class="slds-m-right_x-small">
+            </lightning-button-icon>
+            <lightning-button-icon
+              icon-name="utility:close"
+              alternative-text="Remove"
+              title="Remove"
+              data-id={item.id}
+              onclick={removeField}>
+            </lightning-button-icon>
+          </div>
+        </div>
+      </template>
+    </div>
+  </section>
+</template>
