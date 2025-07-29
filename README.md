@@ -53,7 +53,7 @@ sfdx force:source:deploy -p force-app
 
 ```html
 <c-object-field-selector
-    root-object-api-name="Opportunity">
+    root-object-api-name= {objectApiName}>
 </c-object-field-selector>
 ```
 
